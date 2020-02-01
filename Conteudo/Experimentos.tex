@@ -1,0 +1,959 @@
+\chapter{Experimentos}\label{cap_exemplos}
+Para avaliar o método proposto neste trabalho, foram planejados uma série experimentos, com intuito de escolher técnicas com os melhores desempenhos para serem agregadas ao método. Por fim, o método será comparado a outras técnicas tradicionais para recomendações de filmes. Para isso, esse capitulo está organizado da seguinte forma: na Seção 1 serão descritos os \textit{datasets} utilizados nos experimentos, na Seção 2 serão apresentadas as medidas de avaliação, na Seção 3 serão apresentados os experimentos para encontrar a melhor modelagem dos conteúdos dos filmes para serem utilizados no componente de análise de conteúdo e também os melhores modelos de aprendizagem de máquina para criação do perfil do usuário,   na Seção 4 serão descritos os algoritmos do estado da arte utilizados para comparação e na Subseção 4 será descrita a configuração de hardware utilizada para executar os experimentos. 
+
+\section{\textit{Datasets}}
+Para avaliar o método, dois \textit{datasets} serão utilizados. O primeiro conterá as informações dos filmes, esse \textit{dataset} foi obtido da base de dados do IMDB, este \textit{dataset}, possui diversas informações sobre N filmes, porém, algumas características não estão presentes em todos os filmes, na Tabela \ref{tab:missing_values}, pode ser visto a quantidade de filmes que não possuem certas características.
+\begin{table}[h]
+\label{tab:missing_values}
+ \centering
+\begin{tabular}{|c| c c c|}
+\hline
+Característica &  Filmes sem a característica & \% & Col3 \\ 
+\hline
+Titulo & 6 & 87837 & 787 \\ 
+\hline
+Sinopses & 6 & 87837 & 787 \\ 
+\hline
+Elenco & 7 & 78 & 5415 \\
+\hline
+Gêneros & 545 & 778 & 7507 \\
+\hline
+Diretores & 545 & 18744 & 7560 \\
+\hline
+Ano & 545 & 18744 & 7560 \\
+\hline    
+Roteiristas & 545 & 18744 & 7560 \\
+\hline
+\end{tabular}
+\caption{\label{tab:missing_values}Quantidade de filmes que não possuem determinada características}
+\end{table}
+
+Portanto, nos experimentos foi considerado que, ao escolher certas características para o componente de análise de conteúdo, um parte dos filmes serão removidos, porém, como pode ser visto na tabela, apenas uma pequena porcentagem dos filmes não contém as características.
+
+O segundo \textit{dataset} utilizado nesses experimentos foi o dataste MovieLens 100K, esse \textit{dataset} contém 100 mil avaliações de usuário sobre filmes, para executar os experimentos, apenas os usuários que avaliaram pelo menos 100 filmes foram considerados. As informações do \textit{dataset} utilizado nos experimentos pode ser visto na Tabela \ref{tab:movielens}.
+
+\begin{table}[h]
+\label{tab:movielens}
+ \centering
+\begin{tabular}{|c| c |}
+\hline
+Informação &  Valor \\ 
+\hline
+Avaliações & 6  \\ 
+\hline
+Usuários & 6 \\ 
+\hline
+Filmes & 7 \\
+\hline
+Maior número de avaliações & 545  \\
+\hline
+Menor número de avaliações & 545 \\
+\hline
+Média de avaliações & 545  \\
+\hline    
+\end{tabular}
+\caption{\label{tab:movielens}Informações sobre o \textit{dataset} de avaliações utilizado nos experimentos}
+\end{table}
+\section{Medidas de avaliação}
+Para avaliar os resultados obtidos, serão utilizadas 4 medidas: Precisão, \textit{Recall}, Novidade e Diversidade. As duas primeiras medidas são utilizados em problemas de classificação binária, portanto, para utilizar essas medidas, foi definido que se o usuário deu uma nota acima de 3.0, o filme é relevante para o usuário.
+Essas medidas foram escolhidas pois o propósito desses experimentos é avaliar as listas de recomendações geradas pelo sistema de recomendação. 
+
+Precisão é uma medida que busca determinar a porcentagem de itens recomendados corretamente \cite{olson2008advanced}. O cálculo dessa função é dado pela Equação \ref{precision}:
+\begin{equation}
+\label{precision}
+    Pr = \frac{tp}{tp + fp} 
+\end{equation}
+Onde \(tp\) é o número de recomendações relevantes, também chamado de verdadeiro positivo e \(fp\) é o número de recomendações erradas, também chamado de falso positivo.
+
+\textit{Recall} é uma medida que representa a fração de itens relevantes que foram recomendados \cite{olson2008advanced}. O cálculo dessa função é dado pela Equação \ref{recall}:
+\begin{equation}
+\label{recall}
+    Re = \frac{tp}{tp + fn} 
+\end{equation}
+Onde \(fn\) é o número de itens relevantes que não foram recomendados para o usuário.
+\section{Análise de Conteúdo e Construção de Perfil}
+Para definir os métodos que serão utilizados para análise de conteúdo e construção, foram projetados uma série de experimentos, com o proposito de avaliar diversas abordagens diferentes. Para avaliar todas essas abordagens, foi utilizado uma pequena porcentagem do dataset original. As informações desse \textit{dataset} pode ser visto na Tabela \ref{tab:exp_ac_cp}.
+
+\begin{table}[h]
+\label{tab:exp_ac_cp}
+ \centering
+\begin{tabular}{|c| c |}
+\hline
+Informação &  Valor \\ 
+\hline
+Avaliações & 6  \\ 
+\hline
+Usuários & 6 \\ 
+\hline
+Filmes & 7 \\
+\hline
+Maior número de avaliações & 545  \\
+\hline
+Menor número de avaliações & 545 \\
+\hline
+Média de avaliações & 545  \\
+\hline    
+\end{tabular}
+\caption{\label{tab:exp_ac_cp}Informações sobre o \textit{dataset} de avaliações utilizado nos experimentos}
+\end{table}
+\subsection{Análise de Conteúdo}
+
+Para a Análise de conteúdo, os métodos de extração de características serão utilizados para criar um nova representação para a sinopse dos filmes, como alguns filmes tem mais de uma sinopse, esses textos serão concatenados. Com relação às características categóricas dos filmes, como foi descrito na definição método, será criado uma coluna para categoria da característica. Na Tabela \ref{tab:n_categorias}, pode ser visto a quantidade de categorias para cada característica.
+
+\begin{table}[h]
+\label{tab:n_categorias}
+ \centering
+\begin{tabular}{|c| c |}
+\hline
+Característica &  Quantidade \\ 
+\hline
+Gêneros & 6  \\
+\hline
+Elenco & 6  \\ 
+\hline
+Roteiristas & 6 \\ 
+\hline
+Diretores & 7 \\
+\hline    
+\end{tabular}
+\caption{\label{tab:n_categorias}Número de categorias para cada características}
+\end{table}
+
+Para extração de características dois métodos serão comparados: TF-IDF e Word2vec. Para cada método serão propostos um conjunto de variações com relação aos parâmetros do modelo e as características dos filme que serão considerados  na construção do \textit{dataset}. Nas subseções abaixo, serão apresentadas as variações do métodos de extração de características. 
+
+Para cada variação de método, serão criada outras variações com uma combinação de variáveis categóricas e numéricas diferentes. Na Tabela \label{tab:combinacoes} pode ser vista todas as combinações possíveis.
+
+\begin{table}[H]
+\label{tab:combinacoes}
+\centering
+\begin{tabular}{|c| c | c | c | c|}
+\hline
+Combinação &  Gênero  & Elenco & Roteiristas & Diretores  \\ 
+\hline
+1 & -  & - & - & - \\
+\hline
+2 & -  & - & - & X\\
+\hline
+3 & -  & - & X & - \\
+\hline
+4 & -  & - & X & X \\
+\hline   
+5 & -  & X & - & - \\
+\hline   
+6 & -  & X & - & X \\
+\hline   
+7 & -  & X & X & - \\
+\hline   
+8 & -  & X & X & X \\
+\hline   
+9 & X  & - & - & - \\
+\hline   
+10 & X  & - & - & X \\
+\hline  
+11 & X  & - & X & - \\
+\hline  
+12 & X  & - & X & X \\
+\hline  
+13 & X  & X & - & - \\
+\hline  
+14 & X  & X & - & X \\
+\hline  
+15 & X  & X & X & - \\
+\hline  
+16 & X  & X & X & X \\
+\hline  
+
+\end{tabular}
+\caption{\label{tab:combinacoes}Combinação de Características}
+\end{table}
+
+\subsubsection{TF-IDF}
+Para o TF-IDF, as variações serão dadas a  partir da alteração da quantidade máxima de termos, todas as variações podem ser vistas na Tabela \label{tab:tfidf_vars}:
+\begin{table}[H]
+\label{tab:tfidf_vars}
+\centering
+\begin{tabular}{|c| c | c|}
+\hline
+Variação & Número de termos  \\ 
+\hline
+TFIDF-1000 & 1000 \\
+\hline
+TFIDF-1500  & 1500 \\
+\hline
+TFIDF-2000  & 2000 \\
+\hline 
+\end{tabular}
+\caption{\label{tab:n_categorias}Variações do TF-IDF}
+\end{table}
+
+Todas essas variações utilizaram um mesmo de conjunto de parâmetros, esses valores podem ser vistos na Tabela \label{tab:w2v_fix_vars}.
+
+\begin{table}[H]
+\label{tab:w2v_vars}
+\centering
+\begin{tabular}{|c| c|}
+\hline
+Parâmetro &  Valor  \\ 
+\hline
+W2V-150 &  150 \\
+\hline
+W2V-200 & 200 \\
+\hline
+W2V-250 &  250 \\
+\hline   
+W2V-300 & 300 \\
+\hline 
+\end{tabular}
+\caption{Parâmetros fixos do Word2Vec}
+\end{table}
+
+\subsubsection{Word2Vec}
+
+Para o TF-IDF, as variações serão dadas a  partir da alteração da dimensão do vetor que reprensenta um termo, todas as variações podem ser vistas na Tabela \label{tab:w2v_vars}:
+\begin{table}[H]
+\label{tab:w2v_vars}
+\centering
+\begin{tabular}{|c| c|}
+\hline
+Variação &  Número de Variáveis  \\ 
+\hline
+W2V-150 &  150 \\
+\hline
+W2V-200 & 200 \\
+\hline
+W2V-250 &  250 \\
+\hline   
+W2V-300 & 300 \\
+\hline 
+\end{tabular}
+\caption{Variações do Word2Vec}
+\end{table}
+
+Todas essas variações utilizaram um mesmo de conjunto de parâmetros, esses valores podem ser vistos na Tabela \label{tab:w2v_fix_vars}.
+
+\begin{table}[H]
+\label{tab:w2v_vars}
+\centering
+\begin{tabular}{|c| c|}
+\hline
+Parâmetro &  Valor  \\ 
+\hline
+W2V-150 &  150 \\
+\hline
+W2V-200 & 200 \\
+\hline
+W2V-250 &  250 \\
+\hline   
+W2V-30 & 300 \\
+\hline 
+\end{tabular}
+\caption{Parâmetros fixos do Word2Vec}
+\end{table}
+\subsection{Construção do Perfil}
+Na construção do perfil, quatro modelos de aprendizado  de máquina serão comparados: Ridge, Kernel Ridge, Gradient Boost e AdaBoost. Para cada método, serão avaliados diversas combinações de parâmetros, utilizando General Cross Validation, que busca  encontrar a melhor combinação de  parâmetros para um modelo de aprendizado de máquina, a partir da avaliação do modelo para diferente divisões do \textit{dataset} \cite{kohavi1995study}.
+
+\subsection{Resultados}
+Para avaliar os métodos de extração de característica e construção do perfil, os dataset de avaliações dos usuários serão divididos, onde 70\% do dataset será utilizado para treinamento e 30\% para teste. Assim, a partir desses \textit{datasets}, serão construídos novos \textit{
+dataset} utilizando os métodos de extração de características.
+
+Com a nova representação  dos datasets, os métodos de aprendizado de máquinas serão utilizados para construir o perfil do usuário, utilizando o conjunto de treino. Com isso, esses métodos serão avaliados, no dataset de teste, utilizando as medidas de Precisão e \textit{Recall}.
+
+Nas Tabelas \ref{tab:precisionw2v150vars}, \ref{tab:precisionw2v200vars}, \ref{tab:precisionw2v250vars}, \ref{tab:precisionw2v300vars}, \ref{tab:precisiontfid500}, \ref{tab:precisiontfid1000}, \ref{tab:precisiontfid1500} e \ref{tab:precisiontfid2000}, são apresentados os resultados da medida de precisão obtidas de cada variação dos Word2Vec e TFID com relação aos modelos de aprendizado de máquina utilizados para a construção de perfil. Como pode ser vistos nas tabelas, 
+$ Precision $
+
+\begin{table}[H]
+\label{tab:precisionw2v150vars}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+w2v-150-1 & 0.90403 & 0.90286 & 0.90240 & 0.90493 & 0.90424 \\
+\hline
+w2v-150-2 & 0.90968 & 0.90647 & 0.90290 & 0.90479 & 0.90716 \\
+\hline
+w2v-150-3 & 0.92106 & 0.91559 & 0.91867 & 0.91605 & 0.91820 \\
+\hline
+w2v-150-4 & 0.90371 & 0.90224 & 0.90240 & 0.90499 & 0.90444 \\
+\hline
+w2v-150-5 & 0.90287 & 0.90318 & 0.90240 & 0.90574 & 0.90406 \\
+\hline
+w2v-150-6 & 0.92032 & 0.91721 & 0.91185 & 0.91846 & 0.91671 \\
+\hline
+w2v-150-7 & 0.90958 & 0.90647 & 0.90290 & 0.90488 & 0.90721 \\
+\hline
+w2v-150-8 & 0.90952 & 0.90659 & 0.90288 & 0.90620 & 0.90764 \\
+\hline
+w2v-150-9 & 0.92200 & 0.91701 & 0.91931 & 0.91680 & 0.92007 \\
+\hline
+w2v-150-10 & \textbf{0.92343} & 0.91690 & 0.91965 & 0.91620 & 0.91942 \\
+\hline
+w2v-150-11 & 0.90418 & 0.90340 & 0.90271 & 0.90586 & 0.90396 \\
+\hline
+w2v-150-12 & 0.92048 & 0.91816 & 0.91185 & 0.91849 & 0.91758 \\
+\hline
+w2v-150-13 & 0.91962 & 0.91699 & 0.91254 & 0.91840 & 0.91787 \\
+\hline
+w2v-150-14 & 0.91110 & 0.90659 & 0.90288 & 0.90563 & 0.90774 \\
+\hline
+w2v-150-15 & 0.92224 & 0.91751 & 0.91962 & 0.91705 & 0.91960 \\
+\hline
+w2v-150-16 & 0.92034 & 0.91695 & 0.91254 & 0.91908 & 0.91787 \\
+\hline
+\end{tabular}
+\caption{Precisão dos método w2v-150 com diferentes combinações de características}
+\end{table}
+
+\begin{table}[H]
+\label{tab:precisionw2v200}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+w2v-200-1 & 0.90403 & 0.90266 & 0.90240 & 0.90219 & 0.90365 \\
+\hline
+w2v-200-2 & 0.90921 & 0.90647 & 0.90290 & 0.90286 & 0.90490 \\
+\hline
+w2v-200-3 & 0.91959 & 0.91676 & 0.91867 & 0.91906 & 0.91740 \\
+\hline
+w2v-200-4 & 0.90402 & 0.90336 & 0.90240 & 0.90483 & 0.90365 \\
+\hline
+w2v-200-5 & 0.90271 & 0.90384 & 0.90240 & 0.90266 & 0.90261 \\
+\hline
+w2v-200-6 & 0.92047 & 0.91723 & 0.91185 & 0.91858 & 0.91578 \\
+\hline
+w2v-200-7 & 0.90958 & 0.90647 & 0.90290 & 0.90510 & 0.90455 \\
+\hline
+w2v-200-8 & 0.90952 & 0.90665 & 0.90288 & 0.90234 & 0.90564 \\
+\hline
+w2v-200-9 & 0.91970 & 0.91695 & 0.91931 & 0.92038 & 0.91761 \\
+\hline
+w2v-200-10 & 0.91950 & 0.91573 & 0.91954 & 0.91914 & 0.91712 \\
+\hline
+w2v-200-11 & 0.90269 & 0.90307 & 0.90271 & 0.90462 & 0.90306 \\
+\hline
+w2v-200-12 & 0.92039 & 0.91833 & 0.91185 & 0.91877 & 0.91578 \\
+\hline
+w2v-200-13 & 0.92032 & 0.91722 & 0.91254 & 0.92014 & 0.91688 \\
+\hline
+w2v-200-14 & 0.91115 & 0.90659 & 0.90288 & 0.90433 & 0.90564 \\
+\hline
+w2v-200-15 & \textbf{0.92109} & 0.91750 & 0.91868 & 0.92058 & 0.91816 \\
+\hline
+w2v-200-16 & 0.92034 & 0.91717 & 0.91254 & 0.92029 & 0.91710 \\
+\hline
+\end{tabular}
+\caption{Precisão dos método w2v-200 com diferentes combinações de características}
+\end{table}
+
+\begin{table}[H]
+\label{tab:precisionw2v250}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+w2v-250-1 & 0.90404 & 0.90337 & 0.90240 & 0.90364 & 0.90251 \\
+\hline
+w2v-250-2 & 0.90921 & 0.90647 & 0.90290 & 0.90423 & 0.90536 \\
+\hline
+w2v-250-3 & 0.92161 & 0.91534 & 0.91857 & 0.91981 & 0.91626 \\
+\hline
+w2v-250-4 & 0.90403 & 0.90259 & 0.90240 & 0.90581 & 0.90251 \\
+\hline
+w2v-250-5 & 0.90336 & 0.90357 & 0.90240 & 0.90375 & 0.90347 \\
+\hline
+w2v-250-6 & 0.92050 & 0.91712 & 0.91185 & 0.92138 & 0.91655 \\
+\hline
+w2v-250-7 & 0.90980 & 0.90647 & 0.90290 & 0.90378 & 0.90561 \\
+\hline
+w2v-250-8 & 0.90949 & 0.90659 & 0.90288 & 0.90360 & 0.90496 \\
+\hline
+w2v-250-9 & \textbf{0.92276} & 0.91642 & 0.91931 & 0.92034 & 0.91691 \\
+\hline
+w2v-250-10 & 0.92060 & 0.91580 & 0.91956 & 0.91989 & 0.91769 \\
+\hline
+w2v-250-11 & 0.90283 & 0.90384 & 0.90271 & 0.90410 & 0.90327 \\
+\hline
+w2v-250-12 & 0.92024 & 0.91824 & 0.91185 & 0.92086 & 0.91612 \\
+\hline
+w2v-250-13 & 0.92032 & 0.91699 & 0.91254 & 0.92227 & 0.91629 \\
+\hline
+w2v-250-14 & 0.91122 & 0.90659 & 0.90288 & 0.90353 & 0.90506 \\
+\hline
+w2v-250-15 & 0.92162 & 0.91908 & 0.91859 & 0.92116 & 0.91735 \\
+\hline
+w2v-250-16 & 0.92034 & 0.91703 & 0.91254 & 0.92194 & 0.91624 \\
+\hline
+\end{tabular}
+\caption{Precisão do método w2v-250 com diferentes combinações de características}
+\end{table}
+
+\begin{table}[H]
+\label{tab:precisionw2v300}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+w2v-300-1 & 0.90398 & 0.90208 & 0.90240 & 0.90179 & 0.90271 \\
+\hline
+w2v-300-2 & 0.90909 & 0.90647 & 0.90290 & 0.90195 & 0.90438 \\
+\hline
+w2v-300-3 & 0.92050 & 0.91680 & 0.91867 & 0.91453 & 0.91737 \\
+\hline
+w2v-300-4 & 0.90348 & 0.90235 & 0.90240 & 0.90268 & 0.90271 \\
+\hline
+w2v-300-5 & 0.90283 & 0.90291 & 0.90240 & 0.90140 & 0.90261 \\
+\hline
+w2v-300-6 & 0.92056 & 0.91724 & 0.91185 & 0.91504 & 0.91518 \\
+\hline
+w2v-300-7 & 0.90969 & 0.90647 & 0.90290 & 0.90286 & 0.90447 \\
+\hline
+w2v-300-8 & 0.90998 & 0.90659 & 0.90288 & 0.90193 & 0.90422 \\
+\hline
+w2v-300-9 & \textbf{0.92117} & 0.91788 & 0.91931 & 0.91492 & 0.91741 \\
+\hline
+w2v-300-10 & 0.92109 & 0.91527 & 0.91960 & 0.91508 & 0.91729 \\
+\hline
+w2v-300-11 & 0.90404 & 0.90390 & 0.90271 & 0.90278 & 0.90377 \\
+\hline
+w2v-300-12 & 0.92051 & 0.91817 & 0.91185 & 0.91591 & 0.91526 \\
+\hline
+w2v-300-13 & 0.91961 & 0.91710 & 0.91254 & 0.91496 & 0.91661 \\
+\hline
+w2v-300-14 & 0.91115 & 0.90659 & 0.90288 & 0.90315 & 0.90425 \\
+\hline
+w2v-300-15 & 0.92102 & 0.91689 & 0.91859 & 0.91497 & 0.91805 \\
+\hline
+w2v-300-16 & 0.92034 & 0.91702 & 0.91254 & 0.91599 & 0.91661 \\
+\hline
+\end{tabular}
+\caption{Precisão do método w2v-300 com diferentes combinações de características}
+\end{table}
+
+\begin{table}[H]
+\label{tab:precisiontfid500}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+tfid-500-1 & 0.90340 & 0.90282 & 0.90240 & 0.90575 & 0.90224 \\
+\hline
+tfid-500-2 & 0.91003 & 0.90558 & 0.90277 & 0.90650 & 0.90499 \\
+\hline
+tfid-500-3 & 0.91346 & 0.91152 & 0.91065 & 0.91566 & 0.91187 \\
+\hline
+tfid-500-4 & 0.90325 & 0.90319 & 0.90240 & 0.90549 & 0.90224 \\
+\hline
+tfid-500-5 & 0.90550 & 0.90429 & 0.90235 & 0.90615 & 0.90382 \\
+\hline
+tfid-500-6 & 0.91793 & 0.91123 & 0.91304 & 0.91771 & 0.91441 \\
+\hline
+tfid-500-7 & 0.90994 & 0.90558 & 0.90277 & 0.90607 & 0.90509 \\
+\hline
+tfid-500-8 & 0.91105 & 0.90592 & 0.90288 & 0.90754 & 0.90544 \\
+\hline
+tfid-500-9 & 0.91346 & 0.91141 & 0.91021 & 0.91608 & 0.91198 \\
+\hline
+tfid-500-10 & 0.91400 & 0.91123 & 0.91144 & 0.91700 & 0.91261 \\
+\hline
+tfid-500-11 & 0.90542 & 0.90429 & 0.90235 & 0.90723 & 0.90382 \\
+\hline
+tfid-500-12 & 0.91793 & 0.91147 & 0.91304 & 0.91701 & 0.91417 \\
+\hline
+tfid-500-13 & 0.91821 & 0.91121 & 0.91325 & 0.91801 & 0.91464 \\
+\hline
+tfid-500-14 & 0.91115 & 0.90592 & 0.90288 & 0.90744 & 0.90554 \\
+\hline
+tfid-500-15 & 0.91400 & 0.91119 & 0.91144 & 0.91597 & 0.91117 \\
+\hline
+tfid-500-16 & \textbf{0.91823} & 0.91126 & 0.91325 & 0.91738 & 0.91464 \\
+\hline
+\end{tabular}
+\caption{Precisão do método tfid-500 com diferentes combinações de características}
+\end{table}
+
+\begin{table}[H]
+\label{tab:precisiontfid1000}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+tfid-1000-1 & 0.90290 & 0.90210 & 0.90267 & 0.90846 & 0.90230 \\
+\hline
+tfid-1000-2 & 0.90962 & 0.90611 & 0.90277 & 0.90838 & 0.90479 \\
+\hline
+tfid-1000-3 & 0.91523 & 0.91533 & 0.91371 & 0.91904 & 0.91653 \\
+\hline
+tfid-1000-4 & 0.90322 & 0.90220 & 0.90257 & 0.90759 & 0.90230 \\
+\hline
+tfid-1000-5 & 0.90387 & 0.90237 & 0.90256 & 0.90769 & 0.90285 \\
+\hline
+tfid-1000-6 & 0.91896 & 0.91249 & 0.91347 & \textbf{0.92030} & 0.91572 \\
+\hline
+tfid-1000-7 & 0.90951 & 0.90611 & 0.90277 & 0.90700 & 0.90534 \\
+\hline
+tfid-1000-8 & 0.91126 & 0.90473 & 0.90288 & 0.90809 & 0.90545 \\
+\hline
+tfid-1000-9 & 0.91530 & 0.91651 & 0.91371 & 0.91732 & 0.91558 \\
+\hline
+tfid-1000-10 & 0.91454 & 0.91473 & 0.91249 & 0.91861 & 0.91570 \\
+\hline
+tfid-1000-11 & 0.90401 & 0.90243 & 0.90267 & 0.90607 & 0.90255 \\
+\hline
+tfid-1000-12 & 0.91933 & 0.91249 & 0.91347 & 0.91958 & 0.91572 \\
+\hline
+tfid-1000-13 & 0.91979 & 0.91277 & 0.91401 & 0.92007 & 0.91598 \\
+\hline
+tfid-1000-14 & 0.91133 & 0.90473 & 0.90288 & 0.90697 & 0.90545 \\
+\hline
+tfid-1000-15 & 0.91466 & 0.91467 & 0.91260 & 0.91746 & 0.91476 \\
+\hline
+tfid-1000-16 & 0.91984 & 0.91288 & 0.91401 & 0.91917 & 0.91598 \\
+\hline
+\end{tabular}
+\caption{Precisão do método tfid-1000 com diferentes combinações de características}
+\end{table}
+
+\begin{table}[H]
+\label{tab:precisiontfid1500}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+tfid-1500-1 & 0.90263 & 0.90308 & 0.90240 & 0.90569 & 0.90230 \\
+\hline
+tfid-1500-2 & 0.91208 & 0.90607 & 0.90301 & 0.90615 & 0.90550 \\
+\hline
+tfid-1500-3 & 0.91733 & 0.91528 & 0.91434 & 0.91620 & 0.91685 \\
+\hline
+tfid-1500-4 & 0.90286 & 0.90340 & 0.90260 & 0.90605 & 0.90240 \\
+\hline
+tfid-1500-5 & 0.90356 & 0.90256 & 0.90329 & 0.90626 & 0.90256 \\
+\hline
+tfid-1500-6 & 0.92017 & 0.91433 & 0.91324 & 0.91762 & 0.91520 \\
+\hline
+tfid-1500-7 & 0.91189 & 0.90607 & 0.90301 & 0.90548 & 0.90481 \\
+\hline
+tfid-1500-8 & 0.91139 & 0.90546 & 0.90288 & 0.90632 & 0.90581 \\
+\hline
+tfid-1500-9 & 0.91733 & 0.91528 & 0.91435 & 0.91369 & 0.91685 \\
+\hline
+tfid-1500-10 & 0.91626 & 0.91636 & 0.91630 & 0.91744 & 0.91838 \\
+\hline
+tfid-1500-11 & 0.90346 & 0.90256 & 0.90345 & 0.90620 & 0.90267 \\
+\hline
+tfid-1500-12 & 0.92017 & 0.91434 & 0.91324 & 0.91469 & 0.91530 \\
+\hline
+tfid-1500-13 & \textbf{0.92046} & 0.91415 & 0.91363 & 0.91703 & 0.91539 \\
+\hline
+tfid-1500-14 & 0.91166 & 0.90552 & 0.90288 & 0.90618 & 0.90511 \\
+\hline
+tfid-1500-15 & 0.91626 & 0.91636 & 0.91630 & 0.91567 & 0.91838 \\
+\hline
+tfid-1500-16 & 0.91987 & 0.91415 & 0.91363 & 0.91494 & 0.91549 \\
+\hline
+\end{tabular}
+\caption{Precisão do método tfid-1500 com diferentes combinações de características}
+\end{table}
+
+\begin{table}[H]
+\label{tab:precisiontfid2000}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+tfid-2000-1 & 0.90280 & 0.90253 & 0.90271 & 0.90412 & 0.90232 \\
+\hline
+tfid-2000-2 & 0.91224 & 0.90584 & 0.90301 & 0.90423 & 0.90434 \\
+\hline
+tfid-2000-3 & 0.91585 & 0.91488 & 0.91422 & 0.91814 & 0.91614 \\
+\hline
+tfid-2000-4 & 0.90344 & 0.90253 & 0.90255 & 0.90422 & 0.90242 \\
+\hline
+tfid-2000-5 & 0.90399 & 0.90353 & 0.90326 & 0.90404 & 0.90240 \\
+\hline
+tfid-2000-6 & 0.92038 & 0.91308 & 0.91269 & 0.91873 & 0.91665 \\
+\hline
+tfid-2000-7 & 0.91251 & 0.90584 & 0.90301 & 0.90462 & 0.90424 \\
+\hline
+tfid-2000-8 & 0.91295 & 0.90495 & 0.90288 & 0.90448 & 0.90503 \\
+\hline
+tfid-2000-9 & 0.91585 & 0.91488 & 0.91416 & 0.91683 & 0.91614 \\
+\hline
+tfid-2000-10 & 0.91694 & 0.91780 & 0.91626 & 0.91691 & 0.91819 \\
+\hline
+tfid-2000-11 & 0.90405 & 0.90344 & 0.90396 & 0.90420 & 0.90295 \\
+\hline
+tfid-2000-12 & 0.92058 & 0.91308 & 0.91269 & 0.91781 & 0.91660 \\
+\hline
+tfid-2000-13 & 0.92049 & 0.91352 & 0.91309 & \textbf{0.92070} & 0.91697 \\
+\hline
+tfid-2000-14 & 0.91406 & 0.90495 & 0.90288 & 0.90477 & 0.90465 \\
+\hline
+tfid-2000-15 & 0.91671 & 0.91802 & 0.91660 & 0.91644 & 0.91828 \\
+\hline
+tfid-2000-16 & 0.92049 & 0.91352 & 0.91309 & 0.91769 & 0.91697 \\
+\hline
+\end{tabular}
+\caption{Precisão do método tfid-2000 com diferentes combinações de características}
+\end{table}
+
+$ Recall $
+
+\begin{table}[H]
+\label{tab:recallw2v150}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+w2v-150-1 & 0.99636 & 0.99600 & \textbf{1.00000} & 0.97101 & 0.99879 \\
+\hline
+w2v-150-2 & 0.93588 & 0.97972 & 0.99726 & 0.97021 & 0.99144 \\
+\hline
+w2v-150-3 & 0.96236 & 0.96279 & 0.96785 & 0.95230 & 0.96994 \\
+\hline
+w2v-150-4 & 0.99374 & 0.99854 & \textbf{1.00000} & 0.97078 & 0.99758 \\
+\hline
+w2v-150-5 & 0.99266 & 0.99359 & \textbf{1.00000} & 0.96850 & 0.99595 \\
+\hline
+w2v-150-6 & 0.93307 & 0.95970 & 0.98190 & 0.95732 & 0.97924 \\
+\hline
+w2v-150-7 & 0.93557 & 0.97972 & 0.99726 & 0.97072 & 0.99194 \\
+\hline
+w2v-150-8 & 0.93472 & 0.97538 & 0.99726 & 0.97239 & 0.98820 \\
+\hline
+w2v-150-9 & 0.96161 & 0.96190 & 0.96659 & 0.95362 & 0.96943 \\
+\hline
+w2v-150-10 & 0.95990 & 0.96133 & 0.96802 & 0.95311 & 0.96753 \\
+\hline
+w2v-150-11 & 0.98950 & 0.99236 & \textbf{1.00000} & 0.97005 & 0.99541 \\
+\hline
+w2v-150-12 & 0.93797 & 0.95841 & 0.98190 & 0.95818 & 0.97935 \\
+\hline
+w2v-150-13 & 0.94120 & 0.95237 & 0.98002 & 0.95708 & 0.97783 \\
+\hline
+w2v-150-14 & 0.93553 & 0.97538 & 0.99726 & 0.97081 & 0.98874 \\
+\hline
+w2v-150-15 & 0.95970 & 0.96201 & 0.96793 & 0.95472 & 0.96838 \\
+\hline
+w2v-150-16 & 0.94139 & 0.95171 & 0.98002 & 0.95942 & 0.97783 \\
+\hline
+\end{tabular}
+\caption{Recall dos método w2v-200 com diferentes combinações de características}
+\end{table}
+
+\begin{table}[H]
+\label{tab:recallw2v200}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+w2v-200-1 & 0.99636 & 0.99746 & \textbf{1.00000} & 0.96961 & \textbf{1.00000} \\
+\hline
+w2v-200-2 & 0.93588 & 0.97972 & 0.99726 & 0.97121 & 0.99359 \\
+\hline
+w2v-200-3 & 0.96371 & 0.96132 & 0.96785 & 0.96046 & 0.97070 \\
+\hline
+w2v-200-4 & 0.99625 & 0.99541 & \textbf{1.00000} & 0.97302 & \textbf{1.00000} \\
+\hline
+w2v-200-5 & \textbf{1.00000} & 0.99351 & \textbf{1.00000} & 0.97395 & 0.99784 \\
+\hline
+w2v-200-6 & 0.93488 & 0.95861 & 0.98190 & 0.96315 & 0.98135 \\
+\hline
+w2v-200-7 & 0.93557 & 0.97972 & 0.99726 & 0.97523 & 0.99359 \\
+\hline
+w2v-200-8 & 0.93472 & 0.97584 & 0.99726 & 0.97130 & 0.99154 \\
+\hline
+w2v-200-9 & 0.96797 & 0.96320 & 0.96659 & 0.96165 & 0.97202 \\
+\hline
+w2v-200-10 & 0.96614 & 0.96525 & 0.96748 & 0.96743 & 0.97100 \\
+\hline
+w2v-200-11 & 0.99766 & 0.99104 & \textbf{1.00000} & 0.97524 & 0.99676 \\
+\hline
+w2v-200-12 & 0.93718 & 0.95949 & 0.98190 & 0.96556 & 0.98135 \\
+\hline
+w2v-200-13 & 0.94108 & 0.95528 & 0.98002 & 0.96627 & 0.97945 \\
+\hline
+w2v-200-14 & 0.93604 & 0.97538 & 0.99726 & 0.97455 & 0.99154 \\
+\hline
+w2v-200-15 & 0.96242 & 0.96356 & 0.96818 & 0.96321 & 0.97097 \\
+\hline
+w2v-200-16 & 0.94139 & 0.95421 & 0.98002 & 0.96821 & 0.98145 \\
+\hline
+\end{tabular}
+\caption{\textit{Recall} dos método w2v-200 com diferentes combinações de características}
+\end{table}
+
+\begin{table}[H]
+\label{tab:recallw2v250}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+w2v-250-1 & 0.99750 & 0.99792 & \textbf{1.00000} & 0.96462 & 0.99871 \\
+\hline
+w2v-250-2 & 0.93588 & 0.97972 & 0.99726 & 0.96483 & 0.98968 \\
+\hline
+w2v-250-3 & 0.96229 & 0.96298 & 0.96671 & 0.95982 & 0.96819 \\
+\hline
+w2v-250-4 & 0.99738 & 0.99820 & \textbf{1.00000} & 0.96401 & 0.99871 \\
+\hline
+w2v-250-5 & 0.99668 & 0.99368 & \textbf{1.00000} & 0.96302 & 0.99892 \\
+\hline
+w2v-250-6 & 0.93464 & 0.95797 & 0.98190 & 0.96544 & 0.98037 \\
+\hline
+w2v-250-7 & 0.93665 & 0.97972 & 0.99726 & 0.96410 & 0.98968 \\
+\hline
+w2v-250-8 & 0.93441 & 0.97538 & 0.99726 & 0.96474 & 0.98947 \\
+\hline
+w2v-250-9 & 0.96378 & 0.96151 & 0.96659 & 0.95843 & 0.96943 \\
+\hline
+w2v-250-10 & 0.96365 & 0.96141 & 0.96767 & 0.95950 & 0.96788 \\
+\hline
+w2v-250-11 & 0.99564 & 0.99074 & \textbf{1.00000} & 0.96064 & 0.99784 \\
+\hline
+w2v-250-12 & 0.93549 & 0.95862 & 0.98190 & 0.96466 & 0.98028 \\
+\hline
+w2v-250-13 & 0.94120 & 0.95237 & 0.98002 & 0.96444 & 0.97812 \\
+\hline
+w2v-250-14 & 0.93661 & 0.97538 & 0.99726 & 0.96443 & 0.99001 \\
+\hline
+w2v-250-15 & 0.96421 & 0.96224 & 0.96739 & 0.95757 & 0.96789 \\
+\hline
+w2v-250-16 & 0.94139 & 0.95225 & 0.98002 & 0.96571 & 0.97742 \\
+\hline
+\end{tabular}
+\caption{\textit{Recall} do método w2v-250 com diferentes combinações de características}
+\end{table}
+
+\begin{table}[H]
+\label{tab:recallw2v300}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+w2v-300-1 & 0.99566 & 0.99711 & \textbf{1.00000} & 0.96912 & \textbf{1.00000} \\
+\hline
+w2v-300-2 & 0.93533 & 0.97972 & 0.99726 & 0.96730 & 0.99264 \\
+\hline
+w2v-300-3 & 0.96180 & 0.96301 & 0.96785 & 0.95613 & 0.97116 \\
+\hline
+w2v-300-4 & 0.99113 & 0.99610 & \textbf{1.00000} & 0.96925 & \textbf{1.00000} \\
+\hline
+w2v-300-5 & 0.99436 & 0.99251 & \textbf{1.00000} & 0.96749 & 0.99784 \\
+\hline
+w2v-300-6 & 0.93555 & 0.95979 & 0.98190 & 0.95862 & 0.98038 \\
+\hline
+w2v-300-7 & 0.93611 & 0.97972 & 0.99726 & 0.96979 & 0.99306 \\
+\hline
+w2v-300-8 & 0.93472 & 0.97538 & 0.99726 & 0.96644 & 0.99139 \\
+\hline
+w2v-300-9 & 0.96242 & 0.96354 & 0.96659 & 0.95855 & 0.97139 \\
+\hline
+w2v-300-10 & 0.96205 & 0.96280 & 0.96818 & 0.95766 & 0.97072 \\
+\hline
+w2v-300-11 & 0.99045 & 0.99020 & \textbf{1.00000} & 0.96830 & 0.99730 \\
+\hline
+w2v-300-12 & 0.93718 & 0.95886 & 0.98190 & 0.95653 & 0.98092 \\
+\hline
+w2v-300-13 & 0.94042 & 0.95419 & 0.98002 & 0.95808 & 0.97917 \\
+\hline
+w2v-300-14 & 0.93615 & 0.97538 & 0.99726 & 0.96911 & 0.99170 \\
+\hline
+w2v-300-15 & 0.96146 & 0.96386 & 0.96739 & 0.95513 & 0.97092 \\
+\hline
+w2v-300-16 & 0.94139 & 0.95306 & 0.98002 & 0.95790 & 0.97850 \\
+\hline
+\end{tabular}
+\caption{\textit{Recall} do método w2v-300 com diferentes combinações de características}
+\end{table}
+
+\begin{table}[H]
+\label{tab:recalltfid500}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+tfid-500-1 & 0.98208 & 0.99593 & \textbf{1.00000} & 0.97319 & 0.99740 \\
+\hline
+tfid-500-2 & 0.92967 & 0.98322 & 0.99837 & 0.97497 & 0.99174 \\
+\hline
+tfid-500-3 & 0.97721 & 0.98552 & 0.98353 & 0.95247 & 0.98537 \\
+\hline
+tfid-500-4 & 0.98258 & 0.99661 & \textbf{1.00000} & 0.97013 & 0.99740 \\
+\hline
+tfid-500-5 & 0.98069 & 0.99387 & 0.99930 & 0.96494 & 0.99670 \\
+\hline
+tfid-500-6 & 0.94348 & 0.97565 & 0.98330 & 0.95022 & 0.98355 \\
+\hline
+tfid-500-7 & 0.92839 & 0.98322 & 0.99837 & 0.97257 & 0.99228 \\
+\hline
+tfid-500-8 & 0.93049 & 0.98213 & 0.99726 & 0.97144 & 0.99174 \\
+\hline
+tfid-500-9 & 0.97721 & 0.98547 & 0.98353 & 0.95685 & 0.98612 \\
+\hline
+tfid-500-10 & 0.97435 & 0.98895 & 0.98289 & 0.95678 & 0.98651 \\
+\hline
+tfid-500-11 & 0.98162 & 0.99387 & 0.99930 & 0.96752 & 0.99670 \\
+\hline
+tfid-500-12 & 0.94348 & 0.97703 & 0.98330 & 0.95138 & 0.98517 \\
+\hline
+tfid-500-13 & 0.94589 & 0.97540 & 0.98192 & 0.95358 & 0.98468 \\
+\hline
+tfid-500-14 & 0.93129 & 0.98213 & 0.99726 & 0.96904 & 0.99228 \\
+\hline
+tfid-500-15 & 0.97435 & 0.98849 & 0.98289 & 0.95321 & 0.98522 \\
+\hline
+tfid-500-16 & 0.94632 & 0.97586 & 0.98192 & 0.95270 & 0.98468 \\
+\hline
+\end{tabular}
+\caption{\textit{Recall} do método tfid-500 com diferentes combinações de características}
+\end{table}
+
+\begin{table}[H]
+\label{tab:recalltfid1000}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+tfid-1000-1 & 0.98829 & 0.99492 & 0.99889 & 0.98774 & \textbf{0.99946} \\
+\hline
+tfid-1000-2 & 0.93102 & 0.98310 & 0.99837 & 0.98629 & 0.99279 \\
+\hline
+tfid-1000-3 & 0.97367 & 0.97967 & 0.97456 & 0.97141 & 0.98156 \\
+\hline
+tfid-1000-4 & 0.98798 & 0.99546 & 0.99912 & 0.98762 & 0.99946 \\
+\hline
+tfid-1000-5 & 0.98931 & 0.99346 & 0.99889 & 0.98648 & 0.99888 \\
+\hline
+tfid-1000-6 & 0.94592 & 0.97085 & 0.98553 & 0.97182 & 0.98618 \\
+\hline
+tfid-1000-7 & 0.93206 & 0.98310 & 0.99837 & 0.98758 & 0.99420 \\
+\hline
+tfid-1000-8 & 0.93693 & 0.98222 & 0.99726 & 0.98578 & 0.99334 \\
+\hline
+tfid-1000-9 & 0.97499 & 0.97852 & 0.97444 & 0.97077 & 0.98144 \\
+\hline
+tfid-1000-10 & 0.97366 & 0.98452 & 0.97803 & 0.96770 & 0.98528 \\
+\hline
+tfid-1000-11 & 0.98919 & 0.99392 & 0.99900 & 0.98557 & 0.99900 \\
+\hline
+tfid-1000-12 & 0.94550 & 0.97085 & 0.98553 & 0.96784 & 0.98618 \\
+\hline
+tfid-1000-13 & 0.94742 & 0.97102 & 0.98302 & 0.96744 & 0.98577 \\
+\hline
+tfid-1000-14 & 0.93579 & 0.98222 & 0.99726 & 0.98426 & 0.99322 \\
+\hline
+tfid-1000-15 & 0.97366 & 0.98302 & 0.97803 & 0.96675 & 0.98540 \\
+\hline
+tfid-1000-16 & 0.94777 & 0.97102 & 0.98302 & 0.96773 & 0.98565 \\
+\hline
+\end{tabular}
+\caption{\textit{Recall} do método tfid-1000 com diferentes combinações de características}
+\end{table}
+
+\begin{table}[H]
+\label{tab:recalltfid1500}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+tfid-1500-1 & 0.98890 & 0.99733 & \textbf{1.00000} & 0.98619 & 0.99946 \\
+\hline
+tfid-1500-2 & 0.94166 & 0.98343 & 0.99837 & 0.98375 & 0.99450 \\
+\hline
+tfid-1500-3 & 0.97988 & 0.97968 & 0.97387 & 0.97029 & 0.98344 \\
+\hline
+tfid-1500-4 & 0.99022 & 0.99686 & 0.99988 & 0.98571 & 0.99946 \\
+\hline
+tfid-1500-5 & 0.99045 & 0.99278 & 0.99627 & 0.98511 & 0.99884 \\
+\hline
+tfid-1500-6 & 0.94948 & 0.96405 & 0.98396 & 0.96853 & 0.98501 \\
+\hline
+tfid-1500-7 & 0.94049 & 0.98343 & 0.99837 & 0.98663 & 0.99461 \\
+\hline
+tfid-1500-8 & 0.94169 & 0.97946 & 0.99726 & 0.98473 & 0.99358 \\
+\hline
+tfid-1500-9 & 0.97988 & 0.97979 & 0.97399 & 0.96864 & 0.98344 \\
+\hline
+tfid-1500-10 & 0.97792 & 0.97805 & 0.97504 & 0.96889 & 0.98313 \\
+\hline
+tfid-1500-11 & 0.99056 & 0.99278 & 0.99546 & 0.98432 & 0.99884 \\
+\hline
+tfid-1500-12 & 0.94948 & 0.96377 & 0.98396 & 0.96674 & 0.98601 \\
+\hline
+tfid-1500-13 & 0.94935 & 0.96601 & 0.98296 & 0.96787 & 0.98523 \\
+\hline
+tfid-1500-14 & 0.94265 & 0.97992 & 0.99726 & 0.98507 & 0.99358 \\
+\hline
+tfid-1500-15 & 0.97792 & 0.97805 & 0.97504 & 0.96859 & 0.98313 \\
+\hline
+tfid-1500-16 & 0.94754 & 0.96577 & 0.98296 & 0.96484 & 0.98623 \\
+\hline
+\end{tabular}
+\caption{\textit{Recall} do método tfid-1500 com diferentes combinações de características}
+\end{table}
+
+\begin{table}[H]
+\label{tab:recalltfid2000}
+\centering
+\begin{tabular}{|c| c c  c  c  c| }
+\hline
+Variação &  Ridge & SVM & Elastic & GBR & Agregação  \\ 
+\hline
+tfid-2000-1 & 0.99307 & 0.99671 & 0.99404 & 0.98525 & \textbf{0.99846} \\
+\hline
+tfid-2000-2 & 0.94691 & 0.97718 & 0.99837 & 0.98509 & 0.99599 \\
+\hline
+tfid-2000-3 & 0.97700 & 0.97725 & 0.97337 & 0.97314 & 0.98373 \\
+\hline
+tfid-2000-4 & 0.99119 & 0.99671 & 0.99368 & 0.98541 & 0.99846 \\
+\hline
+tfid-2000-5 & 0.99303 & 0.99439 & 0.99575 & 0.98536 & 0.99746 \\
+\hline
+tfid-2000-6 & 0.95470 & 0.96603 & 0.98244 & 0.97235 & 0.98672 \\
+\hline
+tfid-2000-7 & 0.94691 & 0.97718 & 0.99837 & 0.98484 & 0.99545 \\
+\hline
+tfid-2000-8 & 0.95018 & 0.97892 & 0.99726 & 0.98461 & 0.99548 \\
+\hline
+tfid-2000-9 & 0.97700 & 0.97725 & 0.97240 & 0.97587 & 0.98373 \\
+\hline
+tfid-2000-10 & 0.97684 & 0.97729 & 0.97539 & 0.97091 & 0.98320 \\
+\hline
+tfid-2000-11 & 0.99360 & 0.99362 & 0.99357 & 0.98477 & 0.99678 \\
+\hline
+tfid-2000-12 & 0.95543 & 0.96615 & 0.98244 & 0.97326 & 0.98626 \\
+\hline
+tfid-2000-13 & 0.95341 & 0.96445 & 0.98144 & 0.97109 & 0.98781 \\
+\hline
+tfid-2000-14 & 0.95201 & 0.97892 & 0.99726 & 0.98599 & 0.99514 \\
+\hline
+tfid-2000-15 & 0.97518 & 0.97937 & 0.97454 & 0.97180 & 0.98416 \\
+\hline
+tfid-2000-16 & 0.95307 & 0.96433 & 0.98144 & 0.97076 & 0.98781 \\
+\hline
+\end{tabular}
+\caption{\textit{Recall} do método tfid-2000 com diferentes combinações de características}
+\end{table}
+\section{Algoritmos para comparação}
+Os resultados obtidos pelo método proposto serão comparados aos resultados de outros tres sistemas de recomendações: baseado em conteúdo tradicional, filtro colaborativo tradicional e filtro colaborativo com otimização objetivo. 
+
+O sistema de recomendação baseado em conteúdo utilizado foi o FCMR, o método com filtro colaborativo utilizado foi baseado em Fatoração de Matriz e Nearest-Neighboor e a técnica baseado em filtro colaborativo com otimização multiobjetivo utilizada foi o método MOEA/D-RS.
+
+\section{Configuração de \textit{hardware}}
+Os experimentos serão executados em um computador com um processador Intel Core i7 com 8gb de memória RAM e com uma placa de video GeForce 1050 Ti com 4gb de memória. 
