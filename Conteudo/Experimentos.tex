@@ -1,6 +1,14 @@
 \chapter{Experimentos}\label{cap_exemplos}
-Para avaliar o método proposto neste trabalho, foram planejados uma série experimentos, com intuito de escolher técnicas com os melhores desempenhos para serem agregadas ao método. Por fim, o método será comparado a outras técnicas tradicionais para recomendações de filmes. Para isso, esse capitulo está organizado da seguinte forma: na Seção 1 serão descritos os \textit{datasets} utilizados nos experimentos, na Seção 2 serão apresentadas as medidas de avaliação, na Seção 3 serão apresentados os experimentos para encontrar a melhor modelagem dos conteúdos dos filmes para serem utilizados no componente de análise de conteúdo e também os melhores modelos de aprendizagem de máquina para criação do perfil do usuário,   na Seção 4 serão descritos os algoritmos do estado da arte utilizados para comparação e na Subseção 4 será descrita a configuração de hardware utilizada para executar os experimentos. 
+Para avaliar o método proposto neste trabalho, foram planejados uma série experimentos, com intuito de escolher técnicas com os melhores desempenhos para serem agregadas ao método. Por fim, o método será comparado a outras técnicas tradicionais para recomendações de filmes. Para isso, esse capitulo está organizado da seguinte forma: na Seção 1 será apresentada metodologia dos experimentos, na Seção 2 serão descritos os \textit{datasets} utilizados nos experimentos, na Seção 3 serão apresentadas as medidas de avaliação, na Seção 4 serão apresentados os experimentos para encontrar a melhor modelagem dos conteúdos dos filmes para serem utilizados no componente de análise de conteúdo e também os melhores modelos de aprendizagem de máquina para criação do perfil do usuário,   na Seção 5 serão descritos os algoritmos do estado da arte utilizados para comparação e na Subseção 6 será descrita a configuração de hardware utilizada para executar os experimentos. 
 
+\section{Metodologia dos experimentos}
+Neste trabalho, os experimentos foram  projetados com o propósito de responder 3 questões de pesquisa:
+\begin{itemize}
+    \item Qual a melhor representação de um filme para ser utilizada no processo de recomendação?
+    \item Modelar um sistema de recomendação baseado em conteúdo como um problema multiobjetivo pode gerar melhores recomendações com relação a medidas de qualidade como acurácia, diversidade e novidade?
+\end{itemize}
+
+Para responder essas perguntas, foram planejados uma série experimentos, que inicialmente identificaram as melhores técnicas para análise de conteúdo e construção de perfil, depois essas técnicas serão comparadas com relação ao desempenho do MOEA-RS ao utilizar cada técnica. Após esses experimentos, o MOEA-RS, junto com as técnicas escolhidas, será comparado com técnicas tradicionais de recomendação e com um trabalho relacionado.
 \section{\textit{Datasets}}
 Para avaliar o método, dois \textit{datasets} serão utilizados. O primeiro conterá as informações dos filmes, esse \textit{dataset} foi obtido da base de dados do IMDB, este \textit{dataset}, possui diversas informações sobre N filmes, porém, algumas características não estão presentes em todos os filmes, na Tabela \ref{tab:missing_values}, pode ser visto a quantidade de filmes que não possuem certas características.
 \begin{table}[h]
@@ -30,7 +38,7 @@ Roteiristas & 545 & 18744 & 7560 \\
 
 Portanto, nos experimentos foi considerado que, ao escolher certas características para o componente de análise de conteúdo, um parte dos filmes serão removidos, porém, como pode ser visto na tabela, apenas uma pequena porcentagem dos filmes não contém as características.
 
-O segundo \textit{dataset} utilizado nesses experimentos foi o dataste MovieLens 100K, esse \textit{dataset} contém 100 mil avaliações de usuário sobre filmes, para executar os experimentos, apenas os usuários que avaliaram pelo menos 100 filmes foram considerados. As informações do \textit{dataset} utilizado nos experimentos pode ser visto na Tabela \ref{tab:movielens}.
+O segundo \textit{dataset} utilizado nesses experimentos foi o dataste MovieLens 1M, esse \textit{dataset} contém 1 milhão de avaliações de usuário sobre filmes, para executar os experimentos, apenas os usuários que avaliaram pelo menos 100 filmes foram considerados. As informações do \textit{dataset} utilizado nos experimentos pode ser visto na Tabela \ref{tab:movielens}.
 
 \begin{table}[h]
 \label{tab:movielens}
@@ -72,7 +80,7 @@ Onde \(tp\) é o número de recomendações relevantes, também chamado de verda
 \end{equation}
 Onde \(fn\) é o número de itens relevantes que não foram recomendados para o usuário.
 \section{Análise de Conteúdo e Construção de Perfil}
-Para definir os métodos que serão utilizados para análise de conteúdo e construção, foram projetados uma série de experimentos, com o proposito de avaliar diversas abordagens diferentes. Para avaliar todas essas abordagens, foi utilizado uma pequena porcentagem do dataset original. As informações desse \textit{dataset} pode ser visto na Tabela \ref{tab:exp_ac_cp}.
+Para definir os métodos que serão utilizados para análise de conteúdo e construção, foram projetados uma série de experimentos, com o proposito de avaliar diversas abordagens diferentes. Para avaliar todas essas abordagens, foi utilizado uma pequena porcentagem do dataset original. As informações desse \textit{dataset} pode ser visto na Tabela \ref{tab:exp_ac_cp}. 
 
 \begin{table}[h]
 \label{tab:exp_ac_cp}
@@ -229,10 +237,10 @@ W2V-300 & 300 \\
 \caption{Variações do Word2Vec}
 \end{table}
 
-Todas essas variações utilizaram um mesmo de conjunto de parâmetros, esses valores podem ser vistos na Tabela \label{tab:w2v_fix_vars}.
+Todas essas variações utilizaram um mesmo de conjunto de parâmetros, esses valores podem ser vistos na Tabela \ref{tab:w2v_fix_vars}.
 
 \begin{table}[H]
-\label{tab:w2v_vars}
+\label{w2v_fix_vars}
 \centering
 \begin{tabular}{|c| c|}
 \hline
@@ -251,18 +259,16 @@ W2V-30 & 300 \\
 \end{table}
 \subsection{Construção do Perfil}
 Na construção do perfil, quatro modelos de aprendizado  de máquina serão comparados: Ridge, Kernel Ridge, Gradient Boost e AdaBoost. Para cada método, serão avaliados diversas combinações de parâmetros, utilizando General Cross Validation, que busca  encontrar a melhor combinação de  parâmetros para um modelo de aprendizado de máquina, a partir da avaliação do modelo para diferente divisões do \textit{dataset} \cite{kohavi1995study}.
-
+\
 \subsection{Resultados}
 Para avaliar os métodos de extração de característica e construção do perfil, os dataset de avaliações dos usuários serão divididos, onde 70\% do dataset será utilizado para treinamento e 30\% para teste. Assim, a partir desses \textit{datasets}, serão construídos novos \textit{
 dataset} utilizando os métodos de extração de características.
 
-Com a nova representação  dos datasets, os métodos de aprendizado de máquinas serão utilizados para construir o perfil do usuário, utilizando o conjunto de treino. Com isso, esses métodos serão avaliados, no dataset de teste, utilizando as medidas de Precisão e \textit{Recall}.
+Com a nova representação  dos datasets os métodos de aprendizado de máquinas serão utilizados para construir o perfil do usuário, utilizando o conjunto de treino. Com isso, esses métodos serão avaliados, no dataset de teste, utilizando as medidas de Precisão e \textit{Recall}. Os métodos que obtiverem os melhores resultados serão novamente avaliados com relação ao desempenho do MOEA-RS utilizando cada método.
 
-Nas Tabelas \ref{tab:precisionw2v150vars}, \ref{tab:precisionw2v200vars}, \ref{tab:precisionw2v250vars}, \ref{tab:precisionw2v300vars}, \ref{tab:precisiontfid500}, \ref{tab:precisiontfid1000}, \ref{tab:precisiontfid1500} e \ref{tab:precisiontfid2000}, são apresentados os resultados da medida de precisão obtidas de cada variação dos Word2Vec e TFID com relação aos modelos de aprendizado de máquina utilizados para a construção de perfil. Como pode ser vistos nas tabelas, 
-$ Precision $
+Nas Tabelas \ref{tab:precisionw2v150}, \ref{tab:precisionw2v200}, \ref{tab:precisionw2v250}, \ref{tab:precisionw2v300}, \ref{tab:precisiontfid500}, \ref{tab:precisiontfid1000}, \ref{tab:precisiontfid1500} e \ref{tab:precisiontfid2000}, são apresentados os resultados da medida de precisão obtidas de cada variação dos Word2Vec e TFID com relação aos modelos de aprendizado de máquina utilizados para a construção de perfil, nas tabelas os melhores resultados estão destacados em negrito.
 
 \begin{table}[H]
-\label{tab:precisionw2v150vars}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -302,10 +308,10 @@ w2v-150-16 & 0.92034 & 0.91695 & 0.91254 & 0.91908 & 0.91787 \\
 \hline
 \end{tabular}
 \caption{Precisão dos método w2v-150 com diferentes combinações de características}
+\label{tab:precisionw2v150}
 \end{table}
 
 \begin{table}[H]
-\label{tab:precisionw2v200}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -345,10 +351,10 @@ w2v-200-16 & 0.92034 & 0.91717 & 0.91254 & 0.92029 & 0.91710 \\
 \hline
 \end{tabular}
 \caption{Precisão dos método w2v-200 com diferentes combinações de características}
+\label{tab:precisionw2v200}
 \end{table}
 
 \begin{table}[H]
-\label{tab:precisionw2v250}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -388,10 +394,10 @@ w2v-250-16 & 0.92034 & 0.91703 & 0.91254 & 0.92194 & 0.91624 \\
 \hline
 \end{tabular}
 \caption{Precisão do método w2v-250 com diferentes combinações de características}
+\label{tab:precisionw2v250}
 \end{table}
 
 \begin{table}[H]
-\label{tab:precisionw2v300}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -431,10 +437,10 @@ w2v-300-16 & 0.92034 & 0.91702 & 0.91254 & 0.91599 & 0.91661 \\
 \hline
 \end{tabular}
 \caption{Precisão do método w2v-300 com diferentes combinações de características}
+\label{tab:precisionw2v300}
 \end{table}
 
 \begin{table}[H]
-\label{tab:precisiontfid500}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -474,10 +480,10 @@ tfid-500-16 & \textbf{0.91823} & 0.91126 & 0.91325 & 0.91738 & 0.91464 \\
 \hline
 \end{tabular}
 \caption{Precisão do método tfid-500 com diferentes combinações de características}
+\label{tab:precisiontfid500}
 \end{table}
 
 \begin{table}[H]
-\label{tab:precisiontfid1000}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -517,10 +523,10 @@ tfid-1000-16 & 0.91984 & 0.91288 & 0.91401 & 0.91917 & 0.91598 \\
 \hline
 \end{tabular}
 \caption{Precisão do método tfid-1000 com diferentes combinações de características}
+\label{tab:precisiontfid1000}
 \end{table}
 
 \begin{table}[H]
-\label{tab:precisiontfid1500}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -560,10 +566,10 @@ tfid-1500-16 & 0.91987 & 0.91415 & 0.91363 & 0.91494 & 0.91549 \\
 \hline
 \end{tabular}
 \caption{Precisão do método tfid-1500 com diferentes combinações de características}
+\label{tab:precisiontfid1500}
 \end{table}
 
 \begin{table}[H]
-\label{tab:precisiontfid2000}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -603,12 +609,14 @@ tfid-2000-16 & 0.92049 & 0.91352 & 0.91309 & 0.91769 & 0.91697 \\
 \hline
 \end{tabular}
 \caption{Precisão do método tfid-2000 com diferentes combinações de características}
+\label{tab:precisiontfid2000}
 \end{table}
 
-$ Recall $
+ Como pode ser vistos nas tabelas, para as variações do Word2Vec, o modelo Ridge obteve os melhores resultados de precisão para 150(com a combinação 10), 200(com a combinação 15), 250(com a combinação 9) e 300(com a combinação 9) variáveis. Nas variações do TF-IDF o Ridge obteve os melhores resultados para duas variações(com 500 variáveis junto com a combinação 16 e  1500 variáveis junto com a combinação 13) e o modelo GBR obteve o melhor resultado para as variações com 1000 variáveis junto com a combinação 6 e 2000 variáveis junto com a combinação 13.
+ 
+ Com relação a medida de \textit{Recall}, os resultados das variações podem ser vistos nas Tabelas \ref{tab:recallw2v150}, \ref{tab:recallw2v200}, \ref{tab:recallw2v250}, \ref{tab:recallw2v300}, \ref{tab:recalltfid500}, \ref{tab:recalltfid1000}, \ref{tab:recalltfid1500} e \ref{tab:recalltfid2000}.
 
 \begin{table}[H]
-\label{tab:recallw2v150}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -648,10 +656,10 @@ w2v-150-16 & 0.94139 & 0.95171 & 0.98002 & 0.95942 & 0.97783 \\
 \hline
 \end{tabular}
 \caption{Recall dos método w2v-200 com diferentes combinações de características}
+\label{tab:recallw2v150}
 \end{table}
 
 \begin{table}[H]
-\label{tab:recallw2v200}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -691,10 +699,10 @@ w2v-200-16 & 0.94139 & 0.95421 & 0.98002 & 0.96821 & 0.98145 \\
 \hline
 \end{tabular}
 \caption{\textit{Recall} dos método w2v-200 com diferentes combinações de características}
+\label{tab:recallw2v200}
 \end{table}
 
 \begin{table}[H]
-\label{tab:recallw2v250}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -734,10 +742,10 @@ w2v-250-16 & 0.94139 & 0.95225 & 0.98002 & 0.96571 & 0.97742 \\
 \hline
 \end{tabular}
 \caption{\textit{Recall} do método w2v-250 com diferentes combinações de características}
+\label{tab:recallw2v250}
 \end{table}
 
 \begin{table}[H]
-\label{tab:recallw2v300}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -777,10 +785,10 @@ w2v-300-16 & 0.94139 & 0.95306 & 0.98002 & 0.95790 & 0.97850 \\
 \hline
 \end{tabular}
 \caption{\textit{Recall} do método w2v-300 com diferentes combinações de características}
+\label{tab:recallw2v300}
 \end{table}
 
 \begin{table}[H]
-\label{tab:recalltfid500}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -820,10 +828,10 @@ tfid-500-16 & 0.94632 & 0.97586 & 0.98192 & 0.95270 & 0.98468 \\
 \hline
 \end{tabular}
 \caption{\textit{Recall} do método tfid-500 com diferentes combinações de características}
+\label{tab:recalltfid500}
 \end{table}
 
 \begin{table}[H]
-\label{tab:recalltfid1000}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -863,10 +871,10 @@ tfid-1000-16 & 0.94777 & 0.97102 & 0.98302 & 0.96773 & 0.98565 \\
 \hline
 \end{tabular}
 \caption{\textit{Recall} do método tfid-1000 com diferentes combinações de características}
+\label{tab:recalltfid1000}
 \end{table}
 
 \begin{table}[H]
-\label{tab:recalltfid1500}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -906,10 +914,10 @@ tfid-1500-16 & 0.94754 & 0.96577 & 0.98296 & 0.96484 & 0.98623 \\
 \hline
 \end{tabular}
 \caption{\textit{Recall} do método tfid-1500 com diferentes combinações de características}
+\label{tab:recalltfid1500}
 \end{table}
 
 \begin{table}[H]
-\label{tab:recalltfid2000}
 \centering
 \begin{tabular}{|c| c c  c  c  c| }
 \hline
@@ -949,11 +957,65 @@ tfid-2000-16 & 0.95307 & 0.96433 & 0.98144 & 0.97076 & 0.98781 \\
 \hline
 \end{tabular}
 \caption{\textit{Recall} do método tfid-2000 com diferentes combinações de características}
+\label{tab:recalltfid2000}
 \end{table}
+Como pode ser visto nas Tabelas, muitas variações obtiveram o valor máximo de \textit{Recall}, vale destacar que apenas as variações do TF-IDF com 1000 termos e 2000 termos não obtiveram o valor máximo de \textit{Recall}.
+
+Dado esses resultados, 5 métodos foram selecionados para serem avaliados na próxima etapa de experimentos. O primeiro critério para escolha desses métodos foi o valor da precisão dos seus resultados, a medida de \textit{recall} foi considerada como um critério de desempate. Na Tabela \ref{tab:selected_variations}, pode ser vista as variações selecionados, com a quantidade de variáveis de cada representação e o seus valores de precisão e \textit{recall}.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c| c c  c  c | }
+\hline
+Variação &  Modelo & Número de Variáveis & Precisão & \textit{Recall} \\ 
+\hline
+w2v-150-10 & Ridge & 0.99671 & 0.92343 & 0.95990  \\
+\hline
+w2v-250-9 & Ridge & 0.99671 & 0.92276 & 0.96378  \\
+\hline
+w2v-250-13 & GBR & 0.99671 & 0.92227 & 0.96444  \\
+\hline
+w2v-150-15 & Ridge & 0.99671 & 0.92224 & 0.95472  \\
+\hline
+w2v-150-9 & Ridge & 0.99671 & 0.92200 & 0.96161  \\
+\hline
+\end{tabular}
+\caption{Variações selecionados para serem avaliados em conjunto com o MOEA-RS}
+\label{tab:selected_variations}
+\end{table}
+
+As variações serão avaliadas em duas instâncias do MOEA-RS, que diferem apenas na quantidade máxima de iterações do NSGA-III, essas instâncias serão chamadas de MOEA-RS-100 e MOEA-RS-200, onde, o NSGA-III terá no máximo 100 iterações no MOEA-RS-100  e 200 iterações no MOEA-RS-200.
+
+Para as duas instâncias do MOEA-RS, o NSGA-III, com exceção da quantidade máxima de iterações, foi parametrizado da mesma forma, com população de tamanho 15, a \textit{crossover} sendo calculado utilizando o método SBX \cite{deb2007sbx} com um probabilidade de \textit{crossover} em 0.9, a mutação sendo calculada com a técnica de Mutação Polinomial \cite{deb2014analysing} com taxa de 1/n, onde n é o tamanho do individuo, que é o número de variáveis da representação gerada no aprendizado de perfil.
+
+Na Tabela \ref{tab:selected_variations_results} são apresentados os resultados de Precisão, \textit{Recall}, Diversidade e Novidade para as recomendações de cada variação. Como pode ser visto,  o variação do MOEA-RS, que utiliza o w2v-150-10 para análise de conteúdo e o modelo Ridge para construção de perfil, obteve o melhor resultado.
+\begin{table}[H]
+\centering
+\begin{tabular}{|c| c c  c c | }
+\hline
+Variação &  Modelo & Precisão & \textit{Recall} \\ 
+\hline
+w2v-150-10 & Ridge & 0.99671 & 0.92343 & 0.95990  \\
+\hline
+w2v-250-9 & Ridge & 0.99671 & 0.92276 & 0.96378  \\
+\hline
+w2v-250-13 & GBR & 0.99671 & 0.92227 & 0.96444  \\
+\hline
+w2v-150-15 & Ridge & 0.99671 & 0.92224 & 0.95472  \\
+\hline
+w2v-150-9 & Ridge & 0.99671 & 0.92200 & 0.96161  \\
+\hline
+\end{tabular}
+\caption{Variações selecionados para serem avaliados em conjunto com o MOEA-RS}
+\label{tab:selected_variations_results}
+\end{table}
+
+Portanto, a variação selecionada para execução dos experimentos do MOEA-RS foi a  w2v-150-10 para análise de conteúdo junto com o modelo \textit{Ridge} para construção de perfil.
 \section{Algoritmos para comparação}
-Os resultados obtidos pelo método proposto serão comparados aos resultados de outros tres sistemas de recomendações: baseado em conteúdo tradicional, filtro colaborativo tradicional e filtro colaborativo com otimização objetivo. 
+Os resultados obtidos pelo método proposto serão comparados aos resultados de outros três sistemas de recomendações: baseado em conteúdo tradicional, filtro colaborativo tradicional e filtro colaborativo com otimização objetivo. 
 
 O sistema de recomendação baseado em conteúdo utilizado foi o FCMR, o método com filtro colaborativo utilizado foi baseado em Fatoração de Matriz e Nearest-Neighboor e a técnica baseado em filtro colaborativo com otimização multiobjetivo utilizada foi o método MOEA/D-RS.
 
 \section{Configuração de \textit{hardware}}
 Os experimentos serão executados em um computador com um processador Intel Core i7 com 8gb de memória RAM e com uma placa de video GeForce 1050 Ti com 4gb de memória. 
+

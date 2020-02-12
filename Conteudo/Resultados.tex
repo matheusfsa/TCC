@@ -1,0 +1,36 @@
+\chapter{Resultados}
+
+Neste capitulo serão apresentados e discutidos os resultados dos experimentos que buscam avaliar o MOEA-RS para recomendação de filmes. Os resultados  podem ser visualizados na Tabela \ref{tab:precision_results}, na Tabela, para cada medida de avaliação, são apresentados os valor médio a partir todas as recomendações feitas por cada método, o desvio padrão, a maior(e o menor) valor  obtido por cada método.
+
+\begin{table}[h]
+
+\centering
+\begin{tabular}{r|l|cccr}Método & Medida & Precisão & \textit{Recall} & Diversidade & Novidade \\ 
+\hline                               % para uma linha horizontal
+MOEA-RS & Mean & 0.878351 & 0.197140 & 0.099792 & \textbf{6.241e-02} \\
+      & Std & 0.174940 & 0.110151 & 0.037762 & 6.397e-02 \\
+      & Min & 0.000000 & 0.000000 & 0.000000 & 2.541e-07 \\
+      & Max & 1.000000 & 0.900000 & 1.00000 & 1.431e-01 \\
+\hline  
+CF  & Mean & \textbf{0.941084} & \textbf{0.274845} & 0.072433 & 6.238e-02 \\
+    & Std & 0.081718 & 0.138983 & 0.004091 & 6.392e-02 \\
+    & Min & 0.266667 & 0.025467 & 0.071429 & 2.830e-07 \\
+    & Max & 1.000000 & 1.000000 & 0.097844 & 1.431e-01 \\
+\hline  
+CB K-Means & Mean & 0.896302 & 0.234154  & \textbf{0.111522} & 6.151e-02\\
+    & Std & 0.143168 & 0.147292  & 0.161155 & 6.182e-02 \\
+    & Min & 0.000000 & 0.000000 & 0.000000 & 2.543e-07 \\
+    & Max & 1.000000 & 0.833333 & 1.004367 & 1.432e-01 \\
+\hline  
+MOEA-D/RS & Mean & 0.828279  & 0.194398    & 0.072255 & 6.221e-02\\
+      & Std & 0.167902  & 0.093568 & 0.003956 & 6.390e-02\\
+    & Min & 0.000000 & 0.000000 & 0.071429 & 2.541e-07 \\
+    & Max & 1.000000 & 0.625000 & 0.131161 & 1.431e-01
+\end{tabular}
+\caption{Variações selecionados para serem avaliados em conjunto com o MOEA-RS}
+\label{tab:selected_variations_results}
+\end{table}
+
+\section{\textit{Recall}}
+\section{Diversidade}
+\section{Novidade}
