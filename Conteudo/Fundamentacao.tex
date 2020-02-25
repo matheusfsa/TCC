@@ -111,7 +111,7 @@ O aprendizado de perfil coleta dados que representam as preferências do usuári
     \begin{equation}
         y = w_0 + w_1 * x_1 + w_2 * x_2 + ... + w_m * x_m = Xw
     \end{equation}
-    Com isso, o modelar tentar encontrar, ou aprender, os coeficientes \(w = w_0, w_1, w_2, ..., w_m\), também chamados de pesos, para que minimize a seguinte função de custo, chamada de erro quadrático:
+    Com isso, o modela tentar encontrar, ou aprender, os coeficientes \(w = w_0, w_1, w_2, ..., w_m\), também chamados de pesos, para que minimize a seguinte função de custo, chamada de erro quadrático:
      \begin{equation}
         L(X, w) = || Xw - y ||_{2}^{2}
     \end{equation}
@@ -133,6 +133,15 @@ O aprendizado de perfil coleta dados que representam as preferências do usuári
     \begin{equation}
         l(w) = ||y - Xw||^2_2 + \alpha * ||w||^2_2
     \end{equation}
+    \item \textbf{Modelo Lasso}: Esse modelo tem uma abordagem semelhante ao modelo Ridge. Porém, nesse modelo, a regularização é dada pela norma \(l^1\) \cite{scikit-learn}, dessa forma a função de erro desse modelo é a seguinte:
+    \begin{equation}
+        l(w) = ||y - Xw||^2_2 + \alpha * ||w||_1s
+    \end{equation}
+    \item \textbf{Elastic Net}: Esse modelo corresponde a uma combinação dos modelos Ridge e Lasso, onde a regularização é dada pela soma ponderada das normas \(l^1\) e \(l^2\) \cite{scikit-learn}. A função de custo do Elastic Net pode ser vista na equação abaixo.
+    \begin{equation}
+        l(w) = \frac{1}{2*n} * ||y - Xw||^2_2 +  \alpha * ||w||_1 +  \beta * ||w||^2_2 
+    \end{equation}
+    \item \textbf{\textit{Gradient Boosting Regressor}(GBR)}: Esse método busca construir um modelo a partir de um conjunto de modelos simples, usualmente os modelos utilizados são arvores de decisão, a construção do modelo é dada pela soma dos modelos mais simples \cite{friedman2002stochastic}.
 \end{itemize}
 
 \subsubsection{Filtragem}
@@ -232,8 +241,14 @@ Os MOPs são solucionados por diferentes áreas de pesquisa, dentre as quais des
  
  A área da Otimização Evolucionária Multiobjetivo visa a aplicação de MOEAs para a solução de MOPs \cite{carvalho2013novas}. Os MOEAs modificam os algoritmos evolucionários de duas maneiras: incorporam um mecanismo de seleção, geralmente baseado nos conceitos da Otimalidade de Pareto, e adotam mecanismos para a preservação da diversidade, para evitar a convergência para uma só solução. Como a maioria dos MOPs são problemas complexos, os MOEAs focam em determinar um conjunto de soluções mais próximo possível do Conjunto Ótimo de Pareto, denominado de conjunto de aproximação.
  
-Um MOEA deve convergir para as melhores soluções do problema, porém deve cobrir de melhor forma as diferentes regiões para possibilitar a geração de melhor conjunto para o tomador de decisão \cite{carvalho2013novas}.  
-
+ O funcionamento de um MOEA é dada da seguinte forma: inicialmente, uma população de indivíduos é gerada e seus indivíduos são avaliados, após isso, os indivíduos dominados são removidos da população, para  manter a diversidade da população técnicas para estimar densidade são utilizadas, a partir da população resultantes, são aplicados os operadores evolucionários para gerar novos indivíduos, com essa nova população gerada, o operador de seleção é aplicado para encontrar os melhores indivíduos e o processo é repetido até satisfazer as condições de parada \cite{coello2007evolutionary}.
+ 
+Um MOEA deve convergir para as melhores soluções do problema, porém deve cobrir de melhor forma as diferentes regiões para possibilitar a geração de melhor conjunto para o tomador de decisão \cite{carvalho2013novas}. Os MOEAs mais recorrentes na literatura são os seguintes:
+\begin{itemize}
+    \item \textbf{\textit{Multiobjective Genetic Algorithm}(MOGA)}: Nesse MOEA, os indivíduos são ordenados de acordo com a quantidade de cromossomos da população que são dominados pelo individuo \cite{coello2007evolutionary}. 
+    \item \textbf{\textit{Nondominated Sorting Genetic Algorithm}(NSGA)}:O NSGA separa os indivíduos da população em categorias que estão ligadas a relação de dominância dos indivíduos da categoria com o restante da população, onde, a primeira categoria contém apenas as soluções não dominadas. O valor de \textit{fitness} de cada individuo corresponde a um valor relacionado a sua categoria, para que os indivíduos de uma mesma categoria tenha a mesmo potencial para reprodução \cite{coello2007evolutionary}. Esse algoritmo tem duas variações: NSGA-II e NSGA-III. O NSGA-II, utiliza uma ordenação baseado em dominância mais eficiente e utiliza o elitismo como operador de seleção, esse operador seleciona os melhores indivíduos dentre a população atual e a nova população \cite{deb2002fast}. O NSGA-III é uma modificação do NSGA-II que busca aumentar a diversidade da população a partir da escolha de indivíduos que estão mais próximos de um conjunto de pontos de referências \cite{deb2013evolutionary}.
+    \item \textbf{\textit{Pareto Archived Evolution Strategy}(PAES)}: Esse algoritmo utiliza um arquivo para armazenar todas as soluções não dominadas encontradas durante as iterações. Esse arquivo é utilizado para comparar todos os indivíduos gerados por mutação \cite{coello2007evolutionary}.
+\end{itemize}
 
 \section{Trabalhos Relacionados}
 Na literatura científica, poucos estudos tratam da aplicação de algoritmos multiobjetivos em sistemas de recomendação. Nessa seção, serão descritos trabalhos que apresentaram sistemas de recomendação, para filmes, utilizando técnicas tradicionais( baseado em conteúdo e filtro colaborativo) e técnicas de otimização multiobjetivo.
